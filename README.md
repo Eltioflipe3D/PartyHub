@@ -3,6 +3,8 @@
 Juegos de fiesta para Android con un solo móvil, de código abierto: sin anuncios,
 sin suscripciones, sin cuentas y **sin permisos** (ni internet). Todo ocurre en el móvil.
 
+Totalmente vibecoded btw
+
 ## Juegos
 
 - **🕵️ El Impostor** – todos reciben la misma palabra menos el impostor. Se pasa el móvil
