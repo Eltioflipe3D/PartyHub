@@ -1,13 +1,12 @@
- package com.impostor.game
+package com.partyhub
 
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.activity.viewModels
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.darkColorScheme
@@ -15,25 +14,33 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import com.partyhub.headsup.HeadsUpGame
+import com.partyhub.impostor.ImpostorGame
+import com.partyhub.never.NeverGame
+import com.partyhub.ui.HomeScreen
+
+enum class Screen { HOME, IMPOSTOR, HEADS_UP, NEVER }
 
 class MainActivity : ComponentActivity() {
-
-    private val vm: GameViewModel by viewModels()
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            ImpostorTheme {
-                App(vm)
+            PartyHubTheme {
+                App()
             }
         }
     }
 }
 
 @Composable
-fun ImpostorTheme(content: @Composable () -> Unit) {
+fun PartyHubTheme(content: @Composable () -> Unit) {
     val dark = isSystemInDarkTheme()
     val context = LocalContext.current
     val colors = when {
@@ -46,16 +53,19 @@ fun ImpostorTheme(content: @Composable () -> Unit) {
 }
 
 @Composable
-fun App(vm: GameViewModel) {
-    // Atrás durante la partida vuelve a los ajustes (nunca cierra la app por accidente)
-    BackHandler(enabled = vm.phase != Phase.SETUP) { vm.backToSetup() }
+fun App() {
+    var screen by rememberSaveable { mutableStateOf(Screen.HOME) }
+    val goHome: () -> Unit = { screen = Screen.HOME }
 
-    Surface(color = MaterialTheme.colorScheme.background) {
-        when (vm.phase) {
-            Phase.SETUP -> SetupScreen(vm)
-            Phase.REVEAL -> RevealScreen(vm)
-            Phase.PLAY -> PlayScreen(vm)
-            Phase.RESULT -> ResultScreen(vm)
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.background,
+    ) {
+        when (screen) {
+            Screen.HOME -> HomeScreen(onOpen = { screen = it })
+            Screen.IMPOSTOR -> ImpostorGame(onExit = goHome)
+            Screen.HEADS_UP -> HeadsUpGame(onExit = goHome)
+            Screen.NEVER -> NeverGame(onExit = goHome)
         }
     }
 }

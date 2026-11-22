@@ -1,9 +1,8 @@
-package com.impostor.game
+package com.partyhub.impostor
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -15,10 +14,8 @@ import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -41,13 +38,34 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.partyhub.data.Words
+import com.partyhub.ui.BigButton
+import com.partyhub.ui.BigOutlinedButton
+import com.partyhub.ui.CategoryPicker
+import com.partyhub.ui.ScreenHeader
+import com.partyhub.ui.SectionTitle
 import kotlinx.coroutines.delay
+
+@Composable
+fun ImpostorGame(onExit: () -> Unit, vm: ImpostorViewModel = viewModel()) {
+    // Atrás durante la partida vuelve a los ajustes; desde los ajustes, al menú.
+    BackHandler {
+        if (vm.phase == ImpostorPhase.SETUP) onExit() else vm.backToSetup()
+    }
+
+    when (vm.phase) {
+        ImpostorPhase.SETUP -> ImpostorSetup(vm, onExit)
+        ImpostorPhase.REVEAL -> ImpostorReveal(vm)
+        ImpostorPhase.PLAY -> ImpostorPlay(vm)
+        ImpostorPhase.RESULT -> ImpostorResult(vm)
+    }
+}
 
 // ───────────────────────── Ajustes ─────────────────────────
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun SetupScreen(vm: GameViewModel) {
+private fun ImpostorSetup(vm: ImpostorViewModel, onExit: () -> Unit) {
     val n = vm.players.size
     val maxImp = vm.maxImpostors(n)
     val impostors = vm.impostorCount.coerceIn(1, maxImp)
@@ -58,27 +76,15 @@ fun SetupScreen(vm: GameViewModel) {
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         item {
-            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text(
-                    "🕵️ El Impostor",
-                    style = MaterialTheme.typography.headlineLarge,
-                    fontWeight = FontWeight.Bold,
-                )
-                Text(
-                    "Todos reciben la misma palabra, menos el impostor. " +
-                        "Pasaos el móvil, dad pistas y descubrid quién no la sabe.",
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-            }
-        }
-
-        item {
-            Text(
-                "Jugadores ($n)",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
+            ScreenHeader(
+                title = "🕵️ El Impostor",
+                subtitle = "Todos reciben la misma palabra, menos el impostor. " +
+                    "Pasaos el móvil, dad pistas y descubrid quién no la sabe.",
+                onBack = onExit,
             )
         }
+
+        item { SectionTitle("Jugadores ($n)") }
         itemsIndexed(vm.players) { index, name ->
             Row(verticalAlignment = Alignment.CenterVertically) {
                 OutlinedTextField(
@@ -91,14 +97,14 @@ fun SetupScreen(vm: GameViewModel) {
                 )
                 TextButton(
                     onClick = { vm.removePlayer(index) },
-                    enabled = n > GameViewModel.MIN_PLAYERS,
+                    enabled = n > ImpostorViewModel.MIN_PLAYERS,
                 ) { Text("✕") }
             }
         }
         item {
             OutlinedButton(
                 onClick = vm::addPlayer,
-                enabled = n < GameViewModel.MAX_PLAYERS,
+                enabled = n < ImpostorViewModel.MAX_PLAYERS,
                 modifier = Modifier.fillMaxWidth(),
             ) { Text("+ Añadir jugador") }
         }
@@ -108,12 +114,7 @@ fun SetupScreen(vm: GameViewModel) {
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
             ) {
-                Text(
-                    "Impostores",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    modifier = Modifier.weight(1f),
-                )
+                Column(Modifier.weight(1f)) { SectionTitle("Impostores") }
                 OutlinedButton(
                     onClick = { vm.changeImpostors(-1) },
                     enabled = impostors > 1,
@@ -128,23 +129,12 @@ fun SetupScreen(vm: GameViewModel) {
 
         item {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(
-                    "Categorías",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
+                SectionTitle("Categorías")
+                CategoryPicker(
+                    all = Words.categories.keys,
+                    selected = vm.selectedCategories,
+                    onToggle = vm::toggleCategory,
                 )
-                FlowRow(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(4.dp),
-                ) {
-                    Words.categories.keys.forEach { cat ->
-                        FilterChip(
-                            selected = cat in vm.selectedCategories,
-                            onClick = { vm.toggleCategory(cat) },
-                            label = { Text(cat) },
-                        )
-                    }
-                }
             }
         }
 
@@ -164,19 +154,14 @@ fun SetupScreen(vm: GameViewModel) {
             }
         }
 
-        item {
-            Button(
-                onClick = vm::startRound,
-                modifier = Modifier.fillMaxWidth().height(56.dp),
-            ) { Text("Empezar partida", style = MaterialTheme.typography.titleMedium) }
-        }
+        item { BigButton("Empezar partida", onClick = vm::startRound) }
     }
 }
 
 // ───────────────────────── Reparto de roles ─────────────────────────
 
 @Composable
-fun RevealScreen(vm: GameViewModel) {
+private fun ImpostorReveal(vm: ImpostorViewModel) {
     val i = vm.revealIndex
     var shown by rememberSaveable(i) { mutableStateOf(false) }
     val isImpostor = i in vm.impostors
@@ -207,10 +192,7 @@ fun RevealScreen(vm: GameViewModel) {
                 style = MaterialTheme.typography.bodyLarge,
             )
             Spacer(Modifier.height(24.dp))
-            Button(
-                onClick = { shown = true },
-                modifier = Modifier.fillMaxWidth().height(56.dp),
-            ) { Text("Ver mi palabra", style = MaterialTheme.typography.titleMedium) }
+            BigButton("Ver mi palabra", onClick = { shown = true })
         } else {
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -255,15 +237,10 @@ fun RevealScreen(vm: GameViewModel) {
                 }
             }
             Spacer(Modifier.height(24.dp))
-            Button(
+            BigButton(
+                if (isLast) "Ocultar y empezar" else "Ocultar y pasar al siguiente",
                 onClick = vm::nextReveal,
-                modifier = Modifier.fillMaxWidth().height(56.dp),
-            ) {
-                Text(
-                    if (isLast) "Ocultar y empezar" else "Ocultar y pasar al siguiente",
-                    style = MaterialTheme.typography.titleMedium,
-                )
-            }
+            )
         }
     }
 }
@@ -271,7 +248,7 @@ fun RevealScreen(vm: GameViewModel) {
 // ───────────────────────── Partida ─────────────────────────
 
 @Composable
-fun PlayScreen(vm: GameViewModel) {
+private fun ImpostorPlay(vm: ImpostorViewModel) {
     var now by remember { mutableLongStateOf(System.currentTimeMillis()) }
     LaunchedEffect(Unit) {
         while (true) {
@@ -312,17 +289,14 @@ fun PlayScreen(vm: GameViewModel) {
             style = MaterialTheme.typography.bodyLarge,
         )
         Spacer(Modifier.height(32.dp))
-        Button(
-            onClick = vm::showResult,
-            modifier = Modifier.fillMaxWidth().height(56.dp),
-        ) { Text("Revelar al impostor", style = MaterialTheme.typography.titleMedium) }
+        BigButton("Revelar al impostor", onClick = vm::showResult)
     }
 }
 
 // ───────────────────────── Resultado ─────────────────────────
 
 @Composable
-fun ResultScreen(vm: GameViewModel) {
+private fun ImpostorResult(vm: ImpostorViewModel) {
     val names = vm.impostors.sorted().map { vm.displayName(it) }
 
     Column(
@@ -353,14 +327,8 @@ fun ResultScreen(vm: GameViewModel) {
         )
         Text("Categoría: ${vm.category}", style = MaterialTheme.typography.bodyMedium)
         Spacer(Modifier.height(40.dp))
-        Button(
-            onClick = vm::startRound,
-            modifier = Modifier.fillMaxWidth().height(56.dp),
-        ) { Text("Otra ronda", style = MaterialTheme.typography.titleMedium) }
+        BigButton("Otra ronda", onClick = vm::startRound)
         Spacer(Modifier.height(12.dp))
-        OutlinedButton(
-            onClick = vm::backToSetup,
-            modifier = Modifier.fillMaxWidth().height(56.dp),
-        ) { Text("Cambiar jugadores o ajustes") }
+        BigOutlinedButton("Cambiar jugadores o ajustes", onClick = vm::backToSetup)
     }
 }

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Sin permisos: la app no tiene acceso a internet ni a nada del dispositivo. -->
+<!-- Sin permisos: la app no tiene acceso a internet ni a nada del dispositivo.
+     El sensor de inclinación (acelerómetro) no necesita permiso. -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <application
@@ -11,6 +12,7 @@
 
         <activity
             android:name=".MainActivity"
+            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboardHidden"
             android:exported="true"
             android:screenOrientation="portrait">
             <intent-filter>

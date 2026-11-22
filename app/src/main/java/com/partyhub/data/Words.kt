@@ -1,6 +1,9 @@
-package com.impostor.game
+package com.partyhub.data
 
-/** Categorías y palabras. Añade o quita las que quieras: la app las coge solas. */
+/**
+ * Categorías y palabras compartidas por el Impostor y el juego de la frente.
+ * Añade o quita las que quieras: los juegos las cogen solas.
+ */
 object Words {
     val categories: Map<String, List<String>> = mapOf(
         "Animales" to listOf(
@@ -70,6 +73,38 @@ object Words {
             "Traje", "Pijama", "Bañador", "Bikini", "Cinturón", "Sombrero", "Gafas de sol",
             "Chándal", "Vaqueros", "Jersey", "Sudadera", "Delantal", "Bata", "Chaleco",
             "Tacones", "Pañuelo", "Gorra",
+        ),
+        "Cine y series" to listOf(
+            "Titanic", "Shrek", "Harry Potter", "El Rey León", "Frozen", "Toy Story",
+            "Star Wars", "Los Vengadores", "Matrix", "Jurassic Park", "El Señor de los Anillos",
+            "Stranger Things", "Breaking Bad", "La Casa de Papel", "Juego de Tronos",
+            "Los Simpson", "Friends", "Buscando a Nemo", "Aladdín", "Gladiator",
+            "Piratas del Caribe", "Regreso al Futuro", "Mamma Mia", "Los Increíbles",
+            "Coco", "Up", "El Padrino", "Tiburón", "Ocho apellidos vascos", "Los Goonies",
+        ),
+        "Famosos" to listOf(
+            "Messi", "Cristiano Ronaldo", "Shakira", "Rosalía", "Bad Bunny", "Taylor Swift",
+            "Beyoncé", "Einstein", "Picasso", "Napoleón", "Cleopatra", "Elon Musk",
+            "Michael Jackson", "Freddie Mercury", "Leonardo DiCaprio", "Rafa Nadal",
+            "Penélope Cruz", "Antonio Banderas", "Dua Lipa", "Cervantes", "Shakespeare",
+            "Frida Kahlo", "Mozart", "Michael Jordan", "Marilyn Monroe", "Charles Chaplin",
+            "Salvador Dalí", "Cristóbal Colón",
+        ),
+        "Personajes" to listOf(
+            "Superman", "Spider-Man", "Batman", "Mario Bros", "Pikachu", "Sonic",
+            "Homer Simpson", "Bob Esponja", "Pocoyó", "Darth Vader", "Gandalf", "Don Quijote",
+            "Caperucita Roja", "Peter Pan", "Pinocho", "Blancanieves", "Papá Noel",
+            "Drácula", "Sherlock Holmes", "Hulk", "Goku", "Winnie the Pooh", "Mickey Mouse",
+            "Tarzán", "Cenicienta",
+        ),
+        "Acciones" to listOf(
+            "Bailar", "Dormir", "Cocinar", "Nadar", "Correr", "Cantar", "Llorar", "Reír",
+            "Conducir", "Pescar", "Leer", "Estornudar", "Bostezar", "Ducharse", "Afeitarse",
+            "Planchar", "Fregar los platos", "Hacerse un selfie", "Jugar al fútbol",
+            "Subir una montaña", "Hacer cola", "Pedir perdón", "Dar un abrazo", "Aplaudir",
+            "Maquillarse", "Hacer yoga", "Tocar la guitarra", "Atarse los zapatos",
+            "Montar en bici", "Hacer la compra", "Echarse la siesta", "Contar un chiste",
+            "Pintar un cuadro", "Hacer un regalo",
         ),
     )
 }

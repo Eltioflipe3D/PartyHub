@@ -1,4 +1,4 @@
-package com.impostor.game
+package com.partyhub.impostor
 
 import android.app.Application
 import android.content.Context
@@ -7,10 +7,11 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
+import com.partyhub.data.Words
 
-enum class Phase { SETUP, REVEAL, PLAY, RESULT }
+enum class ImpostorPhase { SETUP, REVEAL, PLAY, RESULT }
 
-class GameViewModel(app: Application) : AndroidViewModel(app) {
+class ImpostorViewModel(app: Application) : AndroidViewModel(app) {
 
     companion object {
         const val MIN_PLAYERS = 3
@@ -27,7 +28,7 @@ class GameViewModel(app: Application) : AndroidViewModel(app) {
     var impostorSeesCategory by mutableStateOf(false)
 
     // ---- Estado de la partida ----
-    var phase by mutableStateOf(Phase.SETUP)
+    var phase by mutableStateOf(ImpostorPhase.SETUP)
         private set
     var word by mutableStateOf("")
         private set
@@ -110,24 +111,24 @@ class GameViewModel(app: Application) : AndroidViewModel(app) {
         impostors = (0 until n).shuffled().take(impostorCount).toSet()
         startingPlayer = (0 until n).random()
         revealIndex = 0
-        phase = Phase.REVEAL
+        phase = ImpostorPhase.REVEAL
     }
 
     fun nextReveal() {
         if (revealIndex + 1 >= players.size) {
             startedAt = System.currentTimeMillis()
-            phase = Phase.PLAY
+            phase = ImpostorPhase.PLAY
         } else {
             revealIndex++
         }
     }
 
     fun showResult() {
-        phase = Phase.RESULT
+        phase = ImpostorPhase.RESULT
     }
 
     fun backToSetup() {
-        phase = Phase.SETUP
+        phase = ImpostorPhase.SETUP
     }
 
     private fun save() {
